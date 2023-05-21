@@ -1,4 +1,5 @@
 import sys
+import math
 import numpy as np
 from OpenGL.GLUT import *
 from OpenGL.GL import *
@@ -102,8 +103,13 @@ def mouse_drag(x, y):
         if picked:
             dx = x - lastx
             dy = y - lasty
-            angle = np.arctan2(dy, dx) * 180 / np.pi
-            t = create_from_eulers([0, 0, angle])
+            angle = math.atan2(dy, dx)
+            center = picked.points[0]  # Assuming the first point represents the center
+            axis = [0, 0, 1]  # Rotation axis (Z-axis)
+            t1 = create_from_translation([-center[0], -center[1], 0])  # Translate to origin
+            t2 = create_from_eulers(axis, angle)  # Rotate around axis-angle representation
+            t3 = create_from_translation([center[0], center[1], 0])  # Translate back to original position
+            t = multiply(multiply(t3, t2), t1)  # Combine the transformations
             picked.set_matrix(multiply(picked.m, t))
             lastx, lasty = x, y
     glutPostRedisplay()
