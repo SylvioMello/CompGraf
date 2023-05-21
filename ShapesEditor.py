@@ -47,20 +47,23 @@ class Circle(object):
         dy = p[1] - self.points[1]
         return dx ** 2 + dy ** 2 <= self.radius ** 2
     def draw(self):
-        triangleAmount = 100
+        triangleAmount = 20
         twicePi = 2.0 * np.pi
+        glPushMatrix()  # Push the current matrix stack
+        glMultMatrixf(self.m)
+        glTranslatef(self.points[0], self.points[1], 0.0)  # Translate to the center of the circle
         glBegin(GL_TRIANGLE_FAN)
-        glColor3f(0.4,0.4,0.4)
-        glVertex2f(self.points[0], self.points[1])  # center of circle
+        glVertex2f(0, 0)  # center of circle
         for i in range(triangleAmount + 1):
             glVertex2f(
-                self.points[0] + (self.radius * np.cos(i * twicePi / triangleAmount)),
-                self.points[1] + (self.radius * np.sin(i * twicePi / triangleAmount))
+                self.radius * np.cos(i * twicePi / triangleAmount),
+                self.radius * np.sin(i * twicePi / triangleAmount)
             )
         glEnd()
+        glPopMatrix()  # Restore the previous matrix from the stack
 
 picked = None
-modeConstants = ["RECTANGLE", "CIRCLE", "TRANSLATE"]
+modeConstants = ["RECTANGLE", "CIRCLE", "TRANSLATE", "ROTATE"]
 mode = modeConstants[0]
 
 def reshape(width, height):
@@ -76,34 +79,43 @@ def mouse(button, state, x, y):
     if mode == "RECTANGLE":
         shapes.append(Rect([[x,y],[x,y]]))
     elif mode == "CIRCLE":
-        shapes.append(Circle([x, y], abs(x - y)))
-    elif mode == "TRANSLATE":
+        shapes.append(Circle([x, y], 0))
+    elif mode == "TRANSLATE" or mode == "ROTATE":
         picked = None
         for s in shapes:
-            if s.contains([x,y]): picked = s
+            if s.contains([x,y]):
+                picked = s
         lastx,lasty = x,y
 
 def mouse_drag(x, y):
+    global lastx, lasty
     if mode == "RECTANGLE":
         shapes[-1].set_point(1,[x,y])
     elif mode == "CIRCLE":
         shapes[-1].set_radius([x, y])
     elif mode == "TRANSLATE":
         if picked:
-            global lastx,lasty
             t = create_from_translation([x-lastx,y-lasty,0])
-            picked.set_matrix(multiply(picked.m,t))
-            lastx,lasty=x,y
+            picked.set_matrix(multiply(picked.m, t))
+            lastx,lasty = x,y
+    elif mode == "ROTATE":
+        if picked:
+            dx = x - lastx
+            dy = y - lasty
+            angle = np.arctan2(dy, dx) * 180 / np.pi
+            t = create_from_eulers([0, 0, angle])
+            picked.set_matrix(multiply(picked.m, t))
+            lastx, lasty = x, y
     glutPostRedisplay()
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT)
     for s in shapes:
-        glColor3f(0.4,0.4,0.4)
-        glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
+        glColor3f(0.4, 0.4, 0.4)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         s.draw()
-        glColor3f(1,0,1)
-        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
+        glColor3f(1.0, 0.0, 1.0)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         s.draw()
     glutSwapBuffers()
 
@@ -120,7 +132,7 @@ def createMenu():
 glutInit(sys.argv)
 glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB)
 glutInitWindowSize (800, 600)
-glutCreateWindow("rectangle editor")
+glutCreateWindow("Shape Editor")
 glutMouseFunc(mouse)
 glutMotionFunc(mouse_drag)
 glutDisplayFunc(display)
