@@ -104,10 +104,10 @@ def mouse_drag(x, y):
             dx = x - lastx
             dy = y - lasty
             angle = math.atan2(dy, dx)
-            center = picked.points[0]  # Assuming the first point represents the center
-            axis = [0, 0, 1]  # Rotation axis (Z-axis)
+            print(angle)
+            center = [*picked.points[0], *picked.points[1]]  # Assuming the first point represents the center
             t1 = create_from_translation([-center[0], -center[1], 0])  # Translate to origin
-            t2 = create_from_eulers(axis, angle)  # Rotate around axis-angle representation
+            t2 = create_from_z_rotation(angle)  # Rotate around Z-axis
             t3 = create_from_translation([center[0], center[1], 0])  # Translate back to original position
             t = multiply(multiply(t3, t2), t1)  # Combine the transformations
             picked.set_matrix(multiply(picked.m, t))
