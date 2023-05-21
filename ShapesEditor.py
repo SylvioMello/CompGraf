@@ -29,12 +29,23 @@ class Rect(object):
         glRectf(*self.points[0],*self.points[1])
         glPopMatrix()
 
-class Circle:
-    def __init__(self, points, radius):
+class Circle(object):
+    def __init__(self, points, radius, m = create_identity()):
         self.points = points
         self.radius = radius
+        self.set_matrix(m)
     def set_radius(self, next_radius):
-        self.radius = next_radius
+        next_x = next_radius[0] - self.points[0]
+        next_y = next_radius[1] - self.points[1]
+        self.radius = np.sqrt((next_x ** 2) + (next_y **2))
+    def set_matrix(self, t):
+        self.m = t
+        self.invm = inverse(t)
+    def contains(self, p):
+        p = apply_to_vector(self.invm, [p[0], p[1], 0, 1])
+        dx = p[0] - self.points[0]
+        dy = p[1] - self.points[1]
+        return dx ** 2 + dy ** 2 <= self.radius ** 2
     def draw(self):
         triangleAmount = 100
         twicePi = 2.0 * np.pi
@@ -65,7 +76,7 @@ def mouse(button, state, x, y):
     if mode == "RECTANGLE":
         shapes.append(Rect([[x,y],[x,y]]))
     elif mode == "CIRCLE":
-        shapes.append(Circle([x, y], 50))
+        shapes.append(Circle([x, y], abs(x - y)))
     elif mode == "TRANSLATE":
         picked = None
         for s in shapes:
@@ -75,8 +86,8 @@ def mouse(button, state, x, y):
 def mouse_drag(x, y):
     if mode == "RECTANGLE":
         shapes[-1].set_point(1,[x,y])
-    # elif mode == "CIRCLE":
-    #     shapes[-1].set_radius([x, y])
+    elif mode == "CIRCLE":
+        shapes[-1].set_radius([x, y])
     elif mode == "TRANSLATE":
         if picked:
             global lastx,lasty
