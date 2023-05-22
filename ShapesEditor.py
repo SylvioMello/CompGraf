@@ -12,6 +12,7 @@ class Rect(object):
     def __init__ (self, points, m = create_identity()):
         self.points = points
         self.set_matrix(m)
+        self.start_scale = None
     def set_point (self, i, p):
         self.points[i] = p
     def set_matrix(self,t):
@@ -35,6 +36,7 @@ class Circle(object):
         self.points = points
         self.radius = radius
         self.set_matrix(m)
+        self.start_scale = None
     def set_radius(self, next_radius):
         next_x = next_radius[0] - self.points[0]
         next_y = next_radius[1] - self.points[1]
@@ -64,7 +66,7 @@ class Circle(object):
         glPopMatrix()  # Restore the previous matrix from the stack
 
 picked = None
-modeConstants = ["RECTANGLE", "CIRCLE", "TRANSLATE", "ROTATE"]
+modeConstants = ["RECTANGLE", "CIRCLE", "TRANSLATE", "ROTATE", "SCALE"]
 mode = modeConstants[0]
 
 def reshape(width, height):
@@ -81,11 +83,14 @@ def mouse(button, state, x, y):
         shapes.append(Rect([[x,y],[x,y]]))
     elif mode == "CIRCLE":
         shapes.append(Circle([x, y], 0))
-    elif mode == "TRANSLATE" or mode == "ROTATE":
+    elif mode == "TRANSLATE" or mode == "ROTATE" or mode == "SCALE":
         picked = None
         for s in shapes:
             if s.contains([x,y]):
                 picked = s
+                if mode == "SCALE":
+                    picked.start_scale = np.array([x, y])
+                break
         lastx,lasty = x,y
 
 def mouse_drag(x, y):
@@ -115,6 +120,17 @@ def mouse_drag(x, y):
             picked.set_matrix(multiply(picked.m, t))
             lastx, lasty = x, y
             last_angle = interpolated_angle
+    elif mode == "SCALE":
+        if picked:
+            if picked.start_scale is not None:
+                center = np.mean(picked.points, axis=0)
+                start_x, start_y = picked.start_scale
+                scale_factor = (x - start_x) / (center[0] - start_x + 1e-5)
+                t1 = create_from_translation([-center[0], -center[1], 0])  # Translate to origin
+                t2 = create_from_scale([scale_factor, 1, 1])  # Scale along X-axis
+                t3 = create_from_translation([center[0], center[1], 0])  # Translate back to original position
+                t = multiply(multiply(t1, t2), t3)  # Combine the transformations
+                picked.set_matrix(multiply(picked.m, t))
     glutPostRedisplay()
 
 def display():
