@@ -48,7 +48,7 @@ class Circle(object):
         dy = p[1] - self.points[1]
         return dx ** 2 + dy ** 2 <= self.radius ** 2
     def draw(self):
-        triangleAmount = 20
+        triangleAmount = 100
         twicePi = 2.0 * np.pi
         glPushMatrix()  # Push the current matrix stack
         glMultMatrixf(self.m)
@@ -101,17 +101,20 @@ def mouse_drag(x, y):
             lastx,lasty = x,y
     elif mode == "ROTATE":
         if picked:
-            dx = x - lastx
-            dy = y - lasty
-            angle = math.atan2(dy, dx)
-            print(angle)
-            center = [*picked.points[0], *picked.points[1]]  # Assuming the first point represents the center
+            scaling_factor = np.power(10.0,-10)
+            dx = (x - lastx) * scaling_factor
+            dy = (y - lasty) * scaling_factor
+            current_angle = np.arctan2(dy, dx) * 180 / np.pi
+            center = np.mean(picked.points, axis = 0)  # Assuming the first point represents the center
+            alpha, last_angle = np.power(10.0,-50), 56.4
+            interpolated_angle = alpha * current_angle + (1 - alpha) * last_angle
             t1 = create_from_translation([-center[0], -center[1], 0])  # Translate to origin
-            t2 = create_from_z_rotation(angle)  # Rotate around Z-axis
+            t2 = create_from_z_rotation(current_angle)  # Rotate around Z-axis
             t3 = create_from_translation([center[0], center[1], 0])  # Translate back to original position
-            t = multiply(multiply(t3, t2), t1)  # Combine the transformations
+            t = multiply(multiply(t1, t2), t3)  # Combine the transformations
             picked.set_matrix(multiply(picked.m, t))
             lastx, lasty = x, y
+            last_angle = interpolated_angle
     glutPostRedisplay()
 
 def display():
