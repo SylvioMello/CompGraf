@@ -1,5 +1,4 @@
 import sys
-import math
 import numpy as np
 from OpenGL.GLUT import *
 from OpenGL.GL import *
@@ -15,9 +14,19 @@ class Rect(object):
         self.start_scale = None
     def set_point (self, i, p):
         self.points[i] = p
+        self.set_center()
     def set_matrix(self,t):
         self.m = t
         self.invm = inverse(t)
+    def set_center(self):
+        self.center = [(self.points[0][0] + self.points[1][0])/2,(self.points[0][1] + self.points[1][1])/2]
+    def get_center(self):
+        # Calculate the center of the rectangle
+        points = []
+        for point in self.points:
+            point = apply_to_vector(self.m, [point[0], point[1], 0, 1])
+            points.append(point)
+        return [(points[0][0]+points[1][0])/2, (points[0][1]+points[1][1])/2]
     def contains(self,p):
         p = apply_to_vector(self.invm, [p[0],p[1],0,1])
         xmin = min(self.points[0][0],self.points[1][0])
@@ -41,6 +50,11 @@ class Circle(object):
         next_x = next_radius[0] - self.points[0]
         next_y = next_radius[1] - self.points[1]
         self.radius = np.sqrt((next_x ** 2) + (next_y **2))
+        self.set_center()
+    def set_center(self):
+        self.center = self.points
+    def get_center(self):
+        return apply_to_vector(self.m, [self.points[0], self.points[1], 0, 1])
     def set_matrix(self, t):
         self.m = t
         self.invm = inverse(t)
@@ -50,7 +64,7 @@ class Circle(object):
         dy = p[1] - self.points[1]
         return dx ** 2 + dy ** 2 <= self.radius ** 2
     def draw(self):
-        triangleAmount = 100
+        triangleAmount = 13
         twicePi = 2.0 * np.pi
         glPushMatrix()  # Push the current matrix stack
         glMultMatrixf(self.m)
@@ -88,9 +102,6 @@ def mouse(button, state, x, y):
         for s in shapes:
             if s.contains([x,y]):
                 picked = s
-                if mode == "SCALE":
-                    picked.start_scale = np.array([x, y])
-                break
         lastx,lasty = x,y
 
 def mouse_drag(x, y):
@@ -106,20 +117,17 @@ def mouse_drag(x, y):
             lastx,lasty = x,y
     elif mode == "ROTATE":
         if picked:
-            scaling_factor = np.power(10.0,-10)
-            dx = (x - lastx) * scaling_factor
-            dy = (y - lasty) * scaling_factor
-            current_angle = np.arctan2(dy, dx) * 180 / np.pi
-            center = np.mean(picked.points, axis = 0)  # Assuming the first point represents the center
-            alpha, last_angle = np.power(10.0,-50), 56.4
-            interpolated_angle = alpha * current_angle + (1 - alpha) * last_angle
+            center = picked.get_center()
+            dx, dy = (x - center[0]), (y - center[1])
+            current_angle = np.arctan2(dy, dx)
+            last_angle = np.degrees(np.arctan2(lasty - center[1], lastx - center[0]) - current_angle)
+            alpha = 0.02 * last_angle
             t1 = create_from_translation([-center[0], -center[1], 0])  # Translate to origin
-            t2 = create_from_z_rotation(current_angle)  # Rotate around Z-axis
+            t2 = create_from_z_rotation(alpha)  # Rotate around Z-axis
             t3 = create_from_translation([center[0], center[1], 0])  # Translate back to original position
             t = multiply(multiply(t1, t2), t3)  # Combine the transformations
             picked.set_matrix(multiply(picked.m, t))
             lastx, lasty = x, y
-            last_angle = interpolated_angle
     elif mode == "SCALE":
         if picked:
             if picked.start_scale is not None:
