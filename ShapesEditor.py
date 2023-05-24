@@ -11,7 +11,6 @@ class Rect(object):
     def __init__ (self, points, m = create_identity()):
         self.points = points
         self.set_matrix(m)
-        self.start_scale = None
     def set_point (self, i, p):
         self.points[i] = p
         self.set_center()
@@ -19,9 +18,10 @@ class Rect(object):
         self.m = t
         self.invm = inverse(t)
     def set_center(self):
+        # Setting the center of the rectangle
         self.center = [(self.points[0][0] + self.points[1][0])/2,(self.points[0][1] + self.points[1][1])/2]
     def get_center(self):
-        # Calculate the center of the rectangle
+        # Calculate the center of the rectangle, used for translation and rotation afterwards
         points = []
         for point in self.points:
             point = apply_to_vector(self.m, [point[0], point[1], 0, 1])
@@ -45,15 +45,17 @@ class Circle(object):
         self.points = points
         self.radius = radius
         self.set_matrix(m)
-        self.start_scale = None
     def set_radius(self, next_radius):
+        # Setting the radius for the circle
         next_x = next_radius[0] - self.points[0]
         next_y = next_radius[1] - self.points[1]
         self.radius = np.sqrt((next_x ** 2) + (next_y **2))
         self.set_center()
     def set_center(self):
+        # Setting the center for the circle
         self.center = self.points
     def get_center(self):
+        # Calculate the center of the circle, used for translation and rotation afterwards
         return apply_to_vector(self.m, [self.points[0], self.points[1], 0, 1])
     def set_matrix(self, t):
         self.m = t
@@ -69,6 +71,7 @@ class Circle(object):
         glPushMatrix()  # Push the current matrix stack
         glMultMatrixf(self.m)
         glTranslatef(self.points[0], self.points[1], 0.0)  # Translate to the center of the circle
+        # Here Triangle Fan is being used and it enables the user to see the rotation without deforming the circle
         glBegin(GL_TRIANGLE_FAN)
         glVertex2f(0, 0)  # center of circle
         for i in range(triangleAmount + 1):
@@ -121,7 +124,7 @@ def mouse_drag(x, y):
             dx, dy = (x - center[0]), (y - center[1])
             current_angle = np.arctan2(dy, dx)
             last_angle = np.degrees(np.arctan2(lasty - center[1], lastx - center[0]) - current_angle)
-            alpha = 0.02 * last_angle
+            alpha = 0.02 * last_angle # The float multiplying last angle can be altered to change speed and smoothness of rotation
             t1 = create_from_translation([-center[0], -center[1], 0])  # Translate to origin
             t2 = create_from_z_rotation(alpha)  # Rotate around Z-axis
             t3 = create_from_translation([center[0], center[1], 0])  # Translate back to original position
