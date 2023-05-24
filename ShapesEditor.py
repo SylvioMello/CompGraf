@@ -131,14 +131,15 @@ def mouse_drag(x, y):
     elif mode == "SCALE":
         if picked:
             center = picked.get_center()
-            start_x, start_y = lastx - center[0], lasty - center[1]
             dx, dy = x - center[0], y - center[1]
-            scale_factor_x = (dx / (start_x + 1e-5)) if start_x != 0 else 1
-            scale_factor_y = (dy / (start_y + 1e-5)) if start_y != 0 else 1
+            current_angle = np.arctan2(dy, dx)
+            scale_factor_x = 1 + (x - lastx) / 100
             t1 = create_from_translation([-center[0], -center[1], 0])  # Translate to origin
-            t2 = create_from_scale([scale_factor_x, scale_factor_y, 1])  # Scale along X and Y axes
-            t3 = create_from_translation([center[0], center[1], 0])  # Translate back to original position
-            t = multiply(multiply(t1, t2), t3)  # Combine the transformations
+            t2 = create_from_z_rotation(current_angle)  # Rotate around Z-axis 
+            t3 = create_from_scale([scale_factor_x, 1, 1])  # Scale along X axis
+            t4 = create_from_z_rotation(-current_angle)  # Rotate back around Z-axis 
+            t5 = create_from_translation([center[0], center[1], 0])  # Translate back to original position
+            t = multiply(multiply(multiply(multiply(t1, t2), t3), t4), t5)  # Combine the transformations
             picked.set_matrix(multiply(picked.m, t))
             lastx, lasty = x, y
     glutPostRedisplay()
