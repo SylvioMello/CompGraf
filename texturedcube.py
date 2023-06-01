@@ -14,22 +14,26 @@ def loadTexture (filename):
     pixels = imagefile.convert("RGBA").tobytes("raw", "RGBA", 0, -1)
 
     # Create an OpenGL texture name and load image into it
-    image = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_2D, image)  
-    glPixelStorei(GL_UNPACK_ALIGNMENT,1)
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, sx, sy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels)
+    image = glGenTextures(1) # associar a imagem ao objeto de textura com um identificador
+    glBindTexture(GL_TEXTURE_2D, image)  # a imagem corrente de textura 2d eh essa
+    glPixelStorei(GL_UNPACK_ALIGNMENT,1) # 1 byte
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, sx, sy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels) # bruxaria
     
     # Set other texture mapping parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
-    
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL) # mudar GL_DECAL para GL_MODULATE?
+    # tem que ligar a iluminacao??
     # Return texture name (an integer)
 
     return image
 
+
+# fazer quatro faces com as flechas e duas faces brancas
+# tem que ser resolvivel...
+# se tiver algum bloco no caminho de outro, esse outro precisa ficar parado
 def drawCube():
     glBegin(GL_QUADS)  # Start Drawing The Cube
 
