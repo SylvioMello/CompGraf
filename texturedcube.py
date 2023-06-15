@@ -2,7 +2,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import sys
-from PIL  import Image
+from PIL import Image
 
 def loadTexture (filename):
     "Loads an image from a file as a texture"
