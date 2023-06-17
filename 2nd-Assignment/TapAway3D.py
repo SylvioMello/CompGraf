@@ -7,7 +7,6 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from random import choice
 from arcball import ArcBall
-#from texturedcube import loadTexture
 
 # Selected object
 selected = None
