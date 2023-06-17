@@ -1,13 +1,13 @@
 import sys
 import numpy as np
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
-from OpenGL.GL import *
-from PIL import Image
-from random import choice
 from math import *
-import vector
-import math
+from PIL import Image
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
+from random import choice
+from arcball import ArcBall
+#from texturedcube import loadTexture
 
 # Selected object
 selected = None
@@ -52,56 +52,6 @@ for i in range(n):
             if k == 2:
                 coord[2] = abs(coord[2])
             right_translation.append(coord)
-
-class ArcBall(object):
-    """Implements an arcball manipulator for specifying rotations."""
-    
-    def __init__(self, center, radius):
-        """Creates a new arcball manipulator. 
-        @param center: Center point of the sphere (in window coordinates).
-        @param radius: Radius of the sphere (in window coordinates).
-        """
-        self.center = center
-        self.radius = radius
-        
-    def _rotby2vectors (self, startvector, endvector):
-        """Given two unit vectors returns the rotation axis and rotation angle 
-        that maps the first onto the second.
-        @param startvector: original vector.
-        @param endvector: destination vector.
-        @return: (angle,axis).
-        """
-        r = vector.cross(startvector, endvector)
-        l = vector.length (r)
-        if l<1e-10: return 0,(0,0,1)
-        angle = acos(vector.dot(startvector,endvector))
-        #angle = asin (l)
-        axis = vector.scale(r,1.0/l)
-        return (angle,axis)
-    
-    def _projvector (self, x, y):
-        """Given a ray with origin (x,y,inf) and direction (0,0,-inf), translate
-        it to the arcball's local coordinate system and return the intersection
-        point with that sphere of unit radius and centered at the origin. If no 
-        intersection exists, intersect it with the plane z=0 and project that
-        that point onto the unit sphere.
-        @param x,y: coordinates for the ray.
-        @return: projected vector.
-        """
-        v = vector.scale ((x-self.center[0],y-self.center[1],0.0), 1.0/self.radius)
-        l = vector.length(v)
-        if l>=1.0: return vector.scale(v,1.0/l)
-        z = sqrt (1.0 - l*l)
-        return (v[0],v[1],z)
-                
-    def rot (self, x0, y0, x1, y1):
-        """Given two screen points, returns the arcball rotation that maps
-        the first onto the second.
-        @param x0,y0: first point.
-        @param x1,y1: second point.
-        @return: (angle,axis).
-        """
-        return self._rotby2vectors (self._projvector(x0,y0), self._projvector(x1,y1))
 
 def rotatecallback (x, y):
     global startx,starty,matrix
@@ -255,14 +205,15 @@ def draw_scene(flatColors=False):
                 name = (i * n + j) * n + k
                 if flatColors:
                     glColor3f((i + 1) / n, (j + 1) / n, (k + 1) / n)
-                if name in removed:
+                if name in removed: # nao desenhe
                     continue
-                glLoadName(name)
+                glLoadName(name) # desenhar em modo select 
+                # sem o mouse pressed, glLoadName nao daria nada
                 glPushMatrix()
                 glTranslatef(x * size + cube_translations[name][0], y * size + cube_translations[name][1], z * size + cube_translations[name][2])
-                glutSolidCube(size * 0.8)
+                glutSolidCube(size * 0.8) # ver cubos espalhadinhos 
                 # Texture initialization
-                loadTexture("arrow2.jpeg") 
+                loadTexture("arrow2.jpg") 
                 # Rotate cube to align with the x-axis
                 x_rot, y_rot, z_rot = right_translation[name][0] / 40, right_translation[name][1] / 40, right_translation[name][2] / 40
                 if x_rot == 1.0:
@@ -296,10 +247,8 @@ def init():
     glEnable(GL_NORMALIZE)
     glEnable(GL_MULTISAMPLE)
     glEnable(GL_TEXTURE_2D)
-
     # Helps with antialiasing
     glEnable(GL_MULTISAMPLE)
-
     global matrix 
     matrix = glGetDoublev(GL_MODELVIEW_MATRIX)
 
@@ -321,7 +270,7 @@ def pick(x, y):
     glFlush()
     glEnable(GL_TEXTURE_2D)
     glEnable(GL_LIGHTING)
-    buf = glReadPixels(x, windowSize[1] - y, 1, 1, GL_RGB, GL_FLOAT)
+    buf = glReadPixels(x, windowSize[1] - y, 1, 1, GL_RGB, GL_FLOAT) # tem que inverter o y, por isso windowsSize[1] - y
     pixel = buf[0][0]
     r, g, b = pixel
     i, j, k = int(r* n - 1), int(g * n - 1), int(b * n - 1)
@@ -332,7 +281,6 @@ def pick(x, y):
 def mousePressed(button, state, x, y):
     global selected, prevx, prevy
     if state == GLUT_DOWN:
-        
         global arcball
         arcball = ArcBall ((width/2,height/2,0), width/2)
         global startx, starty
@@ -421,7 +369,7 @@ def main():
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE)
     glutInitWindowSize(400, 400)
     glutInitWindowPosition(100, 100)
-    glutCreateWindow("picking")
+    glutCreateWindow("Tap Away 3D")
     init()
     glutReshapeFunc(reshape)
     glutDisplayFunc(display)
