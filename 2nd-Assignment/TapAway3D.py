@@ -25,12 +25,12 @@ cube_translations = []
 for i in range(n**3):
     cube_translations.append([0, 0, 0])
 # Direction the cube can move
-move_left = [-40, 0, 0]
-move_right = [40, 0, 0]
-move_back = [0, 40, 0]
-move_front = [0, -40, 0]
-move_up = [0, 0, 40]
-move_down = [0, 0, -40]
+move_left = [-50, 0, 0]
+move_right = [50, 0, 0]
+move_back = [0, 50, 0]
+move_front = [0, -50, 0]
+move_up = [0, 0, 50]
+move_down = [0, 0, -50]
 directions = [move_left, move_right, move_back, move_front, move_up, move_down]
 # Target translation for each cube
 right_translation = [] 
@@ -212,9 +212,9 @@ def draw_scene(flatColors=False):
                 glTranslatef(x * size + cube_translations[name][0], y * size + cube_translations[name][1], z * size + cube_translations[name][2])
                 glutSolidCube(size * 0.8) # ver cubos espalhadinhos 
                 # Texture initialization
-                loadTexture("arrow2.jpg") 
+                loadTexture("2nd-Assignment/arrow2.jpg") 
                 # Rotate cube to align with the x-axis
-                x_rot, y_rot, z_rot = right_translation[name][0] / 40, right_translation[name][1] / 40, right_translation[name][2] / 40
+                x_rot, y_rot, z_rot = right_translation[name][0] / 50, right_translation[name][1] / 50, right_translation[name][2] / 50
                 if x_rot == 1.0:
                     glRotatef(-90, 0, 0, 1)
                 elif x_rot == -1.0:
@@ -230,7 +230,7 @@ def draw_scene(flatColors=False):
                 drawCube(size * 0.401)
                 glPopMatrix()
     if len(removed) == n**3:
-        draw_cube_with_image("youwin.png")  # Replace with the actual image path
+        draw_cube_with_image("2nd-Assignment/youwin.png")  # Replace with the actual image path
 
 def display():
     draw_scene()
@@ -290,26 +290,26 @@ def mousePressed(button, state, x, y):
         coordinates = pick(x, y)
         selected = (coordinates[0] * n + coordinates[1]) * n + coordinates[2]
         if selected >= 0:
-            neighbor = selected + (right_translation[selected][0]/40) * 9 + (right_translation[selected][1]/40) * 3 + (right_translation[selected][2]/40) * 1
+            neighbor = selected + (right_translation[selected][0]/50) * 9 + (right_translation[selected][1]/50) * 3 + (right_translation[selected][2]/50) * 1
             pass_through = False
             if coordinates[0] != 1 or coordinates[1] != 1 or coordinates[2] != 1:
                 if coordinates[0] == 0:
-                    if  right_translation[selected] == [-40, 0, 0]:
+                    if  right_translation[selected] == [-50, 0, 0]:
                         pass_through = True
                 if coordinates[0] == 2:
-                    if  right_translation[selected] == [40, 0, 0]:
+                    if  right_translation[selected] == [50, 0, 0]:
                         pass_through = True
                 if coordinates[1] == 0:
-                    if  right_translation[selected] == [0,-40, 0]: # If moves back
+                    if  right_translation[selected] == [0,-50, 0]: # If moves back
                         pass_through = True
                 if coordinates[1] == 2:
-                    if  right_translation[selected] == [0, 40, 0]: # If moves forward
+                    if  right_translation[selected] == [0, 50, 0]: # If moves forward
                         pass_through = True
                 if coordinates[2] == 0:
-                    if  right_translation[selected] == [0, 0, -40]: # If moves down
+                    if  right_translation[selected] == [0, 0, -50]: # If moves down
                         pass_through = True
                 if coordinates[2] == 2:
-                    if  right_translation[selected] == [0, 0, 40]: # If moves up
+                    if  right_translation[selected] == [0, 0, 50]: # If moves up
                         pass_through = True
             if (neighbor in removed) == True:
                 pass_through = True
