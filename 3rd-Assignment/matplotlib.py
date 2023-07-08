@@ -1,5 +1,9 @@
+import random
 import numpy as np
 import matplotlib.pyplot as plt
+
+k = int(input("Enter the value for k: "))
+d = int(input("Enter the value for d: "))
 
 def B(k, d, nodes):
     if d == 0:
@@ -17,23 +21,7 @@ def calculate_points(k, d, nodes):
         points.append({"u": u, "b": b(u)})
     return points
 
-k = int(input("Enter the value for k: "))
-d = int(input("Enter the value for d: "))
-
 points = calculate_points(k, d, nodes)
-
-plt.plot([p["u"] for p in points], [p["b"] for p in points])
-plt.plot(nodes, np.zeros_like(nodes), 'o')
-
-plt.ylim(0, 1)
-plt.xticks(np.linspace(-1, 10, 10))
-
-plt.grid(True)
-plt.show()
-
-
-import random
-import matplotlib.pyplot as plt
 
 def draw(pts):
     plt.clf()
@@ -63,20 +51,11 @@ def sample_curve(pts, step=0.01):
         sample.append((sum_x, sum_y))
     return sample
 
-def B(k, d, nodes):
-    if d == 0:
-        return lambda u: 1 if nodes[k] <= u < nodes[k + 1] else 0
-    Bk0 = B(k, d - 1, nodes)
-    Bk1 = B(k + 1, d - 1, nodes)
-    return lambda u: ((u - nodes[k]) / (nodes[k + d] - nodes[k])) * Bk0(u) + ((nodes[k + d + 1] - u) / (nodes[k + d + 1] - nodes[k + 1])) * Bk1(u)
-
 def frange(start, stop, step):
     current = start
     while current <= stop:
         yield current
         current += step
-
-nodes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
 def create_control_points():
     width = 800
