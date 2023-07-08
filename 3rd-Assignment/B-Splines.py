@@ -18,6 +18,16 @@ selected_index = -1
 prev_mouse_x = 0
 prev_mouse_y = 0
 
+def create_control_points():
+    pts = []
+    for i in range(6):
+        x = 100 + ((width - 200) / 5) * i
+        y = height / 2 + (random.random() - 0.5) * (height - 200)
+        pts.append((x, y))
+    return pts
+
+control_points = create_control_points()
+
 def draw_control_points():
     glEnable(GL_POINT_SMOOTH)
     glEnable(GL_BLEND)
@@ -29,12 +39,38 @@ def draw_control_points():
         glVertex2f(point[0], point[1])
     glEnd()
 
+def B(k, d, nodes):
+    if d == 0:
+        return lambda u: 1 if nodes[k] <= u < nodes[k + 1] else 0
+    Bk0 = B(k, d - 1, nodes)
+    Bk1 = B(k + 1, d - 1, nodes)
+    return lambda u: ((u - nodes[k]) / (nodes[k + d] - nodes[k])) * Bk0(u) + ((nodes[k + d + 1] - u) / (nodes[k + d + 1] - nodes[k + 1])) * Bk1(u)
+
+def frange(start, stop, step):
+    current = start
+    while current <= stop:
+        yield current
+        current += step
+
+def sample_curve(pts, step=0.01):
+    n = len(pts)
+    b = [B(k, degree, nodes) for k in range(n)]
+    sample = []
+    for u in frange(degree, n, step):
+        sum_x, sum_y = 0, 0
+        for k, p in enumerate(pts):
+            w = b[k](u)
+            sum_x += w * p[0]
+            sum_y += w * p[1]
+        sample.append((sum_x, sum_y))
+    return sample
+
 def draw_sample_curve():
     glEnable(GL_POINT_SMOOTH)
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    glColor4f(1.0, 0.0, 0.0, 1.0)
-    glPointSize(3.0)
+    glColor4f(1.0, 0.0, 0.0, 0.2)
+    glPointSize(5.0)
     glBegin(GL_POINTS)
     sample = sample_curve(control_points)
     for point in sample:
@@ -84,40 +120,6 @@ def motion(x, y):
         prev_mouse_y = height - y
     glutPostRedisplay()
 
-def sample_curve(pts, step=0.01):
-    n = len(pts)
-    b = [B(k, degree, nodes) for k in range(n)]
-    sample = []
-    for u in frange(degree, n, step):
-        sum_x, sum_y = 0, 0
-        for k, p in enumerate(pts):
-            w = b[k](u)
-            sum_x += w * p[0]
-            sum_y += w * p[1]
-        sample.append((sum_x, sum_y))
-    return sample
-
-def B(k, d, nodes):
-    if d == 0:
-        return lambda u: 1 if nodes[k] <= u < nodes[k + 1] else 0
-    Bk0 = B(k, d - 1, nodes)
-    Bk1 = B(k + 1, d - 1, nodes)
-    return lambda u: ((u - nodes[k]) / (nodes[k + d] - nodes[k])) * Bk0(u) + ((nodes[k + d + 1] - u) / (nodes[k + d + 1] - nodes[k + 1])) * Bk1(u)
-
-def frange(start, stop, step):
-    current = start
-    while current <= stop:
-        yield current
-        current += step
-
-def create_control_points():
-    pts = []
-    for i in range(6):
-        x = 100 + ((width - 200) / 5) * i
-        y = height / 2 + (random.random() - 0.5) * (height - 200)
-        pts.append((x, y))
-    return pts
-
 def keyboard(key, x, y):
     global degree
     if key == b'D':
@@ -128,8 +130,6 @@ def keyboard(key, x, y):
         degree = max(1, degree - 1)
         glutPostRedisplay()
         print(f"Decreasing degree to {degree}")
-
-control_points = create_control_points()
 
 glutInit(sys.argv)
 glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA)
