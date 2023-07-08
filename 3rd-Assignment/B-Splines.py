@@ -25,19 +25,15 @@ def draw_control_points():
     glColor3f(0.0, 0.0, 0.0)
     glPointSize(5.0)
     glBegin(GL_POINTS)
-    for i, point in enumerate(control_points):
+    for point in control_points:
         glVertex2f(point[0], point[1])
-        # Draw control point labels
-        glRasterPos2f(point[0] + 10, point[1] - 10)
-        for char in str(i):
-            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10, ord(char))
     glEnd()
 
 def draw_sample_curve():
     glEnable(GL_POINT_SMOOTH)
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    glColor4f(1.0, 0.0, 0.0, 0.2)
+    glColor4f(1.0, 0.0, 0.0, 1.0)
     glPointSize(3.0)
     glBegin(GL_POINTS)
     sample = sample_curve(control_points)
@@ -90,10 +86,9 @@ def motion(x, y):
 
 def sample_curve(pts, step=0.01):
     n = len(pts)
-    print(parms['d'])
-    b = [B(k, parms['d'], nodes) for k in range(n)]
+    b = [B(k, degree, nodes) for k in range(n)]
     sample = []
-    for u in frange(parms['d'], n, step):
+    for u in frange(degree, n, step):
         sum_x, sum_y = 0, 0
         for k, p in enumerate(pts):
             w = b[k](u)
@@ -126,7 +121,7 @@ def create_control_points():
 def keyboard(key, x, y):
     global degree
     if key == b'D':
-        degree += 1
+        degree = min(5, degree + 1)
         glutPostRedisplay()
         print(f"Increasing degree to {degree}")
     elif key == b'd':
@@ -134,7 +129,6 @@ def keyboard(key, x, y):
         glutPostRedisplay()
         print(f"Decreasing degree to {degree}")
 
-parms = {'d': degree}
 control_points = create_control_points()
 
 glutInit(sys.argv)
