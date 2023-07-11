@@ -1,8 +1,9 @@
 import sys
 import random
 from OpenGL.GL import *
-from OpenGL.GLUT import *
 from OpenGL.GLU import *
+from OpenGL.GLUT import *
+from OpenGL.GLUT.fonts import GLUT_BITMAP_HELVETICA_18
 
 # Control points
 control_points = []
@@ -38,6 +39,13 @@ def draw_control_points():
     for point in control_points:
         glVertex2f(point[0], point[1])
     glEnd()
+
+def draw_control_point_labels():
+    glColor3f(0.0, 0.0, 0.0)
+    for i, point in enumerate(control_points):
+        glRasterPos2f(point[0] + 10, point[1] - 10)
+        for char in str(i + 1):
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
 
 def B(k, d, nodes):
     if d == 0:
@@ -82,6 +90,7 @@ def display():
     glLoadIdentity()
     gluOrtho2D(0, width, 0, height)
     draw_control_points()
+    draw_control_point_labels()
     draw_sample_curve()
     glFlush()
 
