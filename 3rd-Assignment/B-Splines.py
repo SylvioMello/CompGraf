@@ -9,6 +9,7 @@ from OpenGL.GLUT.fonts import GLUT_BITMAP_HELVETICA_18
 control_points = []
 degree = 0
 nodes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+random_nums = []
 
 # Initialize window dimensions
 width = 800
@@ -19,11 +20,17 @@ selected_index = -1
 prev_mouse_x = 0
 prev_mouse_y = 0
 
+def generate_random_nums():
+    for _ in range(6):
+        random_nums.append(random.random())
+
+generate_random_nums()
+
 def create_control_points():
     pts = []
     for i in range(6):
         x = 100 + ((width - 200) / 5) * i
-        y = height / 2 + (random.random() - 0.5) * (height - 200)
+        y = height / 2 + (random_nums[i] - 0.5) * (height - 200)
         pts.append((x, y))
     return pts
 
@@ -95,12 +102,13 @@ def display():
     glFlush()
 
 def reshape(w, h):
-    global width, height
+    global width, height, control_points
     width, height = w, h
     glViewport(0, 0, w, h)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluOrtho2D(0, w, 0, h)
+    control_points = create_control_points()
 
 def mouse(button, state, x, y):
     global selected_index, prev_mouse_x, prev_mouse_y
