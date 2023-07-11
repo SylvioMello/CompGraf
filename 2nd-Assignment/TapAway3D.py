@@ -212,7 +212,7 @@ def draw_scene(flatColors=False):
                 glTranslatef(x * size + cube_translations[name][0], y * size + cube_translations[name][1], z * size + cube_translations[name][2])
                 glutSolidCube(size * 0.8) # ver cubos espalhadinhos 
                 # Texture initialization
-                loadTexture("arrow2.jpg") 
+                loadTexture("2nd-Assignment/arrow.jpg") 
                 # Rotate cube to align with the x-axis
                 x_rot, y_rot, z_rot = right_translation[name][0] / 50, right_translation[name][1] / 50, right_translation[name][2] / 50
                 if x_rot == 1.0:
@@ -230,7 +230,7 @@ def draw_scene(flatColors=False):
                 drawCube(size * 0.401)
                 glPopMatrix()
     if len(removed) == n**3:
-        draw_cube_with_image("youwin.png")  # Replace with the actual image path
+        draw_cube_with_image("2nd-Assignment/youwin.png")  # Replace with the actual image path
 
 def display():
     draw_scene()
