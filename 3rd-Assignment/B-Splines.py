@@ -7,7 +7,7 @@ from OpenGL.GLUT.fonts import GLUT_BITMAP_HELVETICA_18
 
 # Control points
 control_points = []
-degree = 1
+degree = 0
 nodes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
 # Initialize window dimensions
@@ -136,7 +136,7 @@ def keyboard(key, x, y):
         glutPostRedisplay()
         print(f"Increasing degree to {degree}")
     elif key == b'd':
-        degree = max(1, degree - 1)
+        degree = max(0, degree - 1)
         glutPostRedisplay()
         print(f"Decreasing degree to {degree}")
 
